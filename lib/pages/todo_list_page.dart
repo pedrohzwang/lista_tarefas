@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-class TodoListPage extends StatelessWidget {
-  const TodoListPage({Key? key}) : super(key: key);
+class TodoListPage extends StatefulWidget {
+  TodoListPage({Key? key}) : super(key: key);
+
+  @override
+  _TodoListState createState() => _TodoListState();
+}
+
+class _TodoListState extends State<TodoListPage> {
+  final TextEditingController taskController = TextEditingController();
+  final DateFormat formatter = DateFormat('dd/MM/yyyy');
+
+  List<String> tasks = [];
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +29,7 @@ class TodoListPage extends StatelessWidget {
                     children: [
                       Expanded(
                         child: TextField(
+                          controller: taskController,
                           decoration: InputDecoration(
                             labelStyle: const TextStyle(
                               color: Colors.white,
@@ -39,7 +51,15 @@ class TodoListPage extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          String task = taskController.text;
+                          if (task.isNotEmpty) {
+                            setState(() {
+                              tasks.add(taskController.text);
+                            });
+                            taskController.clear();
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
                             primary: Colors.red.shade400,
                             padding: const EdgeInsets.all(16)),
@@ -50,17 +70,43 @@ class TodoListPage extends StatelessWidget {
                   const SizedBox(
                     height: 16,
                   ),
+                  Flexible(
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        for (String task in tasks)
+                          ListTile(
+                            title: Text(
+                              task,
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 19),
+                            ),
+                            subtitle: Text(
+                              formatter.format(DateTime.now()),
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
                   Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Você possui 0 tarefas pendentes',
+                          'Você possui ${tasks.length} tarefas pendentes',
                           style: TextStyle(color: Colors.white, fontSize: 16),
                         ),
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          setState(() {
+                            tasks.clear();
+                          });
+                        },
                         style: ElevatedButton.styleFrom(
                             primary: Colors.red.shade400,
                             padding: const EdgeInsets.all(16)),
