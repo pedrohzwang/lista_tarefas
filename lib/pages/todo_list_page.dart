@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:lista_tarefas/widgets/todo_list_item.dart';
 
 class TodoListPage extends StatefulWidget {
   TodoListPage({Key? key}) : super(key: key);
@@ -74,18 +75,7 @@ class _TodoListState extends State<TodoListPage> {
                     child: ListView(
                       shrinkWrap: true,
                       children: [
-                        for (String task in tasks)
-                          ListTile(
-                            title: Text(
-                              task,
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 19),
-                            ),
-                            subtitle: Text(
-                              formatter.format(DateTime.now()),
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                          ),
+                        for (String task in tasks) TodoListItem(),
                       ],
                     ),
                   ),
@@ -97,7 +87,8 @@ class _TodoListState extends State<TodoListPage> {
                       Expanded(
                         child: Text(
                           'Você possui ${tasks.length} tarefas pendentes',
-                          style: TextStyle(color: Colors.white, fontSize: 16),
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 16),
                         ),
                       ),
                       const SizedBox(width: 8),
