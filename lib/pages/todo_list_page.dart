@@ -55,21 +55,6 @@ class _TodoListState extends State<TodoListPage> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          String title = taskController.text;
-                          if (title.isNotEmpty) {
-                            setState(() {
-                              tasks.add(Task(title, DateTime.now()));
-                            });
-                            taskController.clear();
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                            primary: Colors.red.shade400,
-                            padding: const EdgeInsets.all(16)),
-                        child: const Icon(Icons.add),
-                      ),
                     ],
                   ),
                   const SizedBox(
@@ -110,6 +95,29 @@ class _TodoListState extends State<TodoListPage> {
             ),
           ),
         ),
+        bottomNavigationBar: BottomAppBar(
+          shape: CircularNotchedRectangle(),
+          child: Text(
+            'Você possui ${tasks.length} tarefas pendentes',
+            style: const TextStyle(color: Colors.white, fontSize: 16),
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            String title = taskController.text;
+            if (title.isNotEmpty) {
+              setState(() {
+                tasks.add(Task(title, DateTime.now()));
+              });
+              taskController.clear();
+            }
+          },
+          tooltip: 'Increment Counter',
+          child: const Icon(Icons.add),
+          backgroundColor: Colors.red.shade400,
+        ),
+        floatingActionButtonLocation:
+            FloatingActionButtonLocation.miniEndDocked,
       ),
     );
   }
