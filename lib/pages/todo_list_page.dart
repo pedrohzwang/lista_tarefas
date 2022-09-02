@@ -103,7 +103,7 @@ class TodoListState extends State<TodoListPage> {
                     addTask();
                   },
                   style: TextButton.styleFrom(
-                      primary: Theme.of(context).primaryColor),
+                      primary: Theme.of(context).primaryColorLight),
                   child: const Text('Confirmar'),
                 ),
               ],
@@ -174,7 +174,6 @@ class TodoListState extends State<TodoListPage> {
         ),
         action: SnackBarAction(
           label: 'Desfazer',
-          textColor: Theme.of(context).primaryColorDark,
           onPressed: () {
             setState(() {
               tasks.insert(indexDeletedTask!, deletedTask!);

@@ -22,6 +22,7 @@ final theme = ThemeData(
   ),
   snackBarTheme: SnackBarThemeData(
     backgroundColor: Colors.indigo.shade400,
-    actionTextColor: Colors.indigo.shade900,
+    actionTextColor: Colors.yellow,
+    disabledActionTextColor: Colors.grey.shade300,
   ),
 );
