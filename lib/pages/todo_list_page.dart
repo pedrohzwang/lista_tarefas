@@ -7,10 +7,10 @@ class TodoListPage extends StatefulWidget {
   const TodoListPage({Key? key}) : super(key: key);
 
   @override
-  _TodoListState createState() => _TodoListState();
+  TodoListState createState() => TodoListState();
 }
 
-class _TodoListState extends State<TodoListPage> {
+class TodoListState extends State<TodoListPage> {
   final TextEditingController taskController = TextEditingController();
   final DateFormat formatter = DateFormat('dd/MM/yyyy');
 
@@ -22,104 +22,102 @@ class _TodoListState extends State<TodoListPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: Container(
-          color: Colors.black54,
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
                     children: [
-                      Expanded(
-                        child: TextField(
-                          controller: taskController,
-                          decoration: InputDecoration(
-                            labelStyle: const TextStyle(
-                              color: Colors.white,
-                            ),
-                            hintText: 'Adicionar uma tarefa',
-                            hintStyle: const TextStyle(
-                              color: Colors.white,
-                            ),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Colors.red.shade400,
-                                width: 5,
-                              ),
-                            ),
-                          ),
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 20),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
+                      for (Task task in tasks) TodoListItem(task, onDelete),
                     ],
                   ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  Flexible(
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: [
-                        for (Task task in tasks) TodoListItem(task, onDelete),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Você possui ${tasks.length} tarefas pendentes',
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 16),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: showDeleteAllTasksConfirmationDialog,
-                        style: ElevatedButton.styleFrom(
-                            primary: Colors.red.shade400,
-                            padding: const EdgeInsets.all(16)),
-                        child: const Text('Limpar tudo'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
         bottomNavigationBar: BottomAppBar(
-          shape: CircularNotchedRectangle(),
-          child: Text(
-            'Você possui ${tasks.length} tarefas pendentes',
-            style: const TextStyle(color: Colors.white, fontSize: 16),
+          shape: const CircularNotchedRectangle(),
+          child: SizedBox(
+              height: 50,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20),
+                    child: Text(
+                      'Você possui ${tasks.length} tarefas pendentes',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
+                ],
+              )),
+        ),
+        floatingActionButton: SizedBox(
+          width: 75,
+          height: 75,
+          child: FloatingActionButton(
+            onPressed: showAddTaskDialog,
+            tooltip: 'Adicionar task',
+            child: const Icon(Icons.add),
           ),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            String title = taskController.text;
-            if (title.isNotEmpty) {
-              setState(() {
-                tasks.add(Task(title, DateTime.now()));
-              });
-              taskController.clear();
-            }
-          },
-          tooltip: 'Increment Counter',
-          child: const Icon(Icons.add),
-          backgroundColor: Colors.red.shade400,
-        ),
-        floatingActionButtonLocation:
-            FloatingActionButtonLocation.miniEndDocked,
+        floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       ),
     );
+  }
+
+  void showAddTaskDialog() {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: const Text('Informe o título da tarefa'),
+              content: TextField(
+                controller: taskController,
+                decoration: const InputDecoration(
+                  hintText: 'Adicionar uma tarefa',
+                ),
+                style: const TextStyle(fontSize: 15),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  style: TextButton.styleFrom(
+                      primary: Theme.of(context).disabledColor),
+                  child: const Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    addTask();
+                  },
+                  style: TextButton.styleFrom(
+                      primary: Theme.of(context).primaryColor),
+                  child: const Text('Confirmar'),
+                ),
+              ],
+            ));
+  }
+
+  void addTask() {
+    String title = taskController.text;
+    if (title.isNotEmpty) {
+      setState(() {
+        tasks.add(Task(title, DateTime.now()));
+      });
+      taskController.clear();
+    }
   }
 
   void showDeleteAllTasksConfirmationDialog() {
@@ -134,7 +132,8 @@ class _TodoListState extends State<TodoListPage> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            style: TextButton.styleFrom(primary: Colors.black54),
+            style:
+                TextButton.styleFrom(primary: Theme.of(context).disabledColor),
             child: const Text('Cancelar'),
           ),
           TextButton(
@@ -142,7 +141,8 @@ class _TodoListState extends State<TodoListPage> {
               Navigator.of(context).pop();
               deleteAllTasks();
             },
-            style: TextButton.styleFrom(primary: Colors.red.shade400),
+            style:
+                TextButton.styleFrom(primary: Theme.of(context).primaryColor),
             child: const Text('Confirmar'),
           ),
         ],
@@ -172,10 +172,9 @@ class _TodoListState extends State<TodoListPage> {
             color: Colors.white,
           ),
         ),
-        backgroundColor: Colors.black54,
         action: SnackBarAction(
           label: 'Desfazer',
-          textColor: Colors.red.shade400,
+          textColor: Theme.of(context).primaryColorDark,
           onPressed: () {
             setState(() {
               tasks.insert(indexDeletedTask!, deletedTask!);

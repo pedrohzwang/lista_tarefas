@@ -3,6 +3,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:lista_tarefas/models/task.dart';
 
+// ignore: must_be_immutable
 class TodoListItem extends StatelessWidget {
   TodoListItem(this.task, this.onDelete, {Key? key}) : super(key: key);
 
@@ -33,7 +34,7 @@ class TodoListItem extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
-            color: Colors.red.shade200,
+            color: Theme.of(context).primaryColorDark,
           ),
           padding: const EdgeInsets.all(16),
           child: Column(
