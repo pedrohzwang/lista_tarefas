@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lista_tarefas/models/task.dart';
+import 'package:lista_tarefas/widgets/action_button.dart';
+import 'package:lista_tarefas/widgets/expandable_fab.dart';
 import 'package:lista_tarefas/widgets/todo_list_item.dart';
 
 class TodoListPage extends StatefulWidget {
@@ -52,7 +54,9 @@ class TodoListState extends State<TodoListPage> {
                   Padding(
                     padding: const EdgeInsets.only(left: 20),
                     child: Text(
-                      'Você possui ${tasks.length} tarefas pendentes',
+                      tasks.isEmpty
+                          ? 'Sem tarefas pendentes'
+                          : '${tasks.length} tarefas pendentes',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -63,14 +67,27 @@ class TodoListState extends State<TodoListPage> {
               )),
         ),
         floatingActionButton: SizedBox(
-          width: 75,
-          height: 75,
-          child: FloatingActionButton(
-            onPressed: showAddTaskDialog,
-            tooltip: 'Adicionar task',
-            child: const Icon(Icons.add),
-          ),
-        ),
+            width: 75,
+            height: 75,
+            child: FloatingActionButton(
+              onPressed: showAddTaskDialog,
+              child: const Icon(Icons.add),
+            )
+            // ExpandableFab(
+            //   distance: 100,
+            //   initialOpen: false,
+            //   children: [
+            //     ActionButton(
+            //       onPressed: () => showAddTaskDialog(),
+            //       icon: const Icon(Icons.add),
+            //     ),
+            //     ActionButton(
+            //       onPressed: showAddTaskDialog,
+            //       icon: const Icon(Icons.delete),
+            //     ),
+            //   ],
+            // ),
+            ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       ),
     );
