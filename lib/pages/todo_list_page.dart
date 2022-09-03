@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:lista_tarefas/hive/hive_controller.dart';
 import 'package:lista_tarefas/models/task.dart';
 import 'package:lista_tarefas/widgets/action_button.dart';
 import 'package:lista_tarefas/widgets/expandable_fab.dart';
@@ -16,9 +18,14 @@ class TodoListState extends State<TodoListPage> {
   final TextEditingController taskController = TextEditingController();
   final DateFormat formatter = DateFormat('dd/MM/yyyy');
 
-  List<Task> tasks = [];
   Task? deletedTask;
   int? indexDeletedTask;
+
+  @override
+  void dispose() {
+    Hive.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,11 +39,19 @@ class TodoListState extends State<TodoListPage> {
               children: [
                 const SizedBox(height: 8),
                 Flexible(
-                  child: ListView(
-                    shrinkWrap: true,
-                    children: [
-                      for (Task task in tasks) TodoListItem(task, onDelete),
-                    ],
+                  child: ValueListenableBuilder(
+                    valueListenable: taskBox.listenable(),
+                    builder: (context, Box<Task> box, _) {
+                      if (box.values.isEmpty) {
+                        return const Center();
+                      }
+                      return ListView.builder(
+                        itemCount: box.values.length,
+                        itemBuilder: (context, index) {
+                          return TodoListItem(box.getAt(index)!, onDelete);
+                        },
+                      );
+                    },
                   ),
                 ),
               ],
@@ -53,14 +68,19 @@ class TodoListState extends State<TodoListPage> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(left: 20),
-                    child: Text(
-                      tasks.isEmpty
-                          ? 'Sem tarefas pendentes'
-                          : '${tasks.length} tarefas pendentes',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    child: ValueListenableBuilder(
+                      valueListenable: taskBox.listenable(),
+                      builder: (context, Box<Task> box, _) {
+                        return Text(
+                          taskBox.isEmpty
+                              ? 'Sem tarefas pendentes'
+                              : '${taskBox.length} tarefas pendentes',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        );
+                      },
                     ),
                   )
                 ],
@@ -130,9 +150,7 @@ class TodoListState extends State<TodoListPage> {
   void addTask() {
     String title = taskController.text;
     if (title.isNotEmpty) {
-      setState(() {
-        tasks.add(Task(title, DateTime.now()));
-      });
+      taskBox.add(Task(title, DateTime.now()));
       taskController.clear();
     }
   }
@@ -168,17 +186,12 @@ class TodoListState extends State<TodoListPage> {
   }
 
   void deleteAllTasks() {
-    setState(() {
-      tasks.clear();
-    });
+    taskBox.deleteAll(taskBox.keys);
   }
 
   void onDelete(Task task) {
-    setState(() {
-      deletedTask = task;
-      indexDeletedTask = tasks.indexOf(task);
-      tasks.remove(task);
-    });
+    final deletedKey = task.key;
+    task.delete();
 
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -192,9 +205,7 @@ class TodoListState extends State<TodoListPage> {
         action: SnackBarAction(
           label: 'Desfazer',
           onPressed: () {
-            setState(() {
-              tasks.insert(indexDeletedTask!, deletedTask!);
-            });
+            taskBox.put(deletedKey, task);
           },
         ),
         duration: const Duration(seconds: 3),
