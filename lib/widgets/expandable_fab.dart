@@ -91,7 +91,7 @@ class _ExpandableFabState extends State<ExpandableFab>
   List<Widget> _buildExpandingActionButtons() {
     final children = <Widget>[];
     final count = widget.children.length;
-    final step = 90.0 / (count - 1);
+    final step = 45.0 / (count - 1);
     for (var i = 0, angleInDegrees = 0.0;
         i < count;
         i++, angleInDegrees += step) {
@@ -120,17 +120,18 @@ class _ExpandableFabState extends State<ExpandableFab>
         duration: const Duration(milliseconds: 250),
         curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
         child: AnimatedOpacity(
-            opacity: _open ? 0.0 : 1.0,
-            curve: const Interval(0.25, 1.0, curve: Curves.easeInOut),
-            duration: const Duration(milliseconds: 250),
-            child: SizedBox(
-              height: 75,
-              width: 75,
-              child: FloatingActionButton(
-                onPressed: _toggle,
-                child: const Icon(Icons.create),
-              ),
-            )),
+          opacity: _open ? 0.0 : 1.0,
+          curve: const Interval(0.25, 1.0, curve: Curves.easeInOut),
+          duration: const Duration(milliseconds: 250),
+          child: SizedBox(
+            height: 75,
+            width: 75,
+            child: FloatingActionButton(
+              onPressed: _toggle,
+              child: const Icon(Icons.create),
+            ),
+          ),
+        ),
       ),
     );
   }

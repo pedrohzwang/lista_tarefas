@@ -93,13 +93,13 @@ class TodoListState extends State<TodoListPage> {
               onPressed: showAddTaskDialog,
               child: const Icon(Icons.add),
             )
-            // ExpandableFab(
+            //     ExpandableFab(
             //   distance: 100,
             //   initialOpen: false,
             //   children: [
-            //     ActionButton(
-            //       onPressed: () => showAddTaskDialog(),
-            //       icon: const Icon(Icons.add),
+            //     FloatingActionButton(
+            //       onPressed: showAddTaskDialog,
+            //       child: const Icon(Icons.delete),
             //     ),
             //     ActionButton(
             //       onPressed: showAddTaskDialog,
