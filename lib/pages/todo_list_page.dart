@@ -3,8 +3,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:lista_tarefas/hive/hive_controller.dart';
 import 'package:lista_tarefas/models/task.dart';
-import 'package:lista_tarefas/widgets/action_button.dart';
-import 'package:lista_tarefas/widgets/expandable_fab.dart';
 import 'package:lista_tarefas/widgets/todo_list_item.dart';
 
 class TodoListPage extends StatefulWidget {
@@ -48,7 +46,8 @@ class TodoListState extends State<TodoListPage> {
                       return ListView.builder(
                         itemCount: box.values.length,
                         itemBuilder: (context, index) {
-                          return TodoListItem(box.getAt(index)!, onDelete);
+                          return TodoListItem(
+                              box.getAt(index)!, onDelete, onFinished);
                         },
                       );
                     },
@@ -71,10 +70,13 @@ class TodoListState extends State<TodoListPage> {
                     child: ValueListenableBuilder(
                       valueListenable: taskBox.listenable(),
                       builder: (context, Box<Task> box, _) {
+                        int pendentes = taskBox.values
+                            .where((task) => task.finished == false)
+                            .length;
                         return Text(
-                          taskBox.isEmpty
-                              ? 'Sem tarefas pendentes'
-                              : '${taskBox.length} tarefas pendentes',
+                          pendentes > 0
+                              ? '$pendentes tarefa${pendentes > 1 ? 's' : ''} pendente${pendentes > 1 ? 's' : ''}'
+                              : 'Sem tarefas pendentes',
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -213,5 +215,9 @@ class TodoListState extends State<TodoListPage> {
         duration: const Duration(seconds: 3),
       ),
     );
+  }
+
+  void onFinished(Task task) {
+    task.save();
   }
 }
