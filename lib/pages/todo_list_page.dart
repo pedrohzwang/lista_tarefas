@@ -119,6 +119,7 @@ class TodoListState extends State<TodoListPage> {
         builder: (context) => AlertDialog(
               title: const Text('Informe o título da tarefa'),
               content: TextField(
+                autofocus: true,
                 controller: taskController,
                 decoration: const InputDecoration(
                   hintText: 'Adicionar uma tarefa',
@@ -129,6 +130,7 @@ class TodoListState extends State<TodoListPage> {
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
+                    taskController.clear();
                   },
                   style: TextButton.styleFrom(
                       primary: Theme.of(context).disabledColor),
