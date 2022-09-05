@@ -1,117 +1,158 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:lista_tarefas/hive/hive_controller.dart';
 import 'package:lista_tarefas/models/task.dart';
+import 'package:lista_tarefas/widgets/action_button.dart';
+import 'package:lista_tarefas/widgets/expandable_fab.dart';
 import 'package:lista_tarefas/widgets/todo_list_item.dart';
 
 class TodoListPage extends StatefulWidget {
   const TodoListPage({Key? key}) : super(key: key);
 
   @override
-  _TodoListState createState() => _TodoListState();
+  TodoListState createState() => TodoListState();
 }
 
-class _TodoListState extends State<TodoListPage> {
+class TodoListState extends State<TodoListPage> {
   final TextEditingController taskController = TextEditingController();
   final DateFormat formatter = DateFormat('dd/MM/yyyy');
 
-  List<Task> tasks = [];
   Task? deletedTask;
   int? indexDeletedTask;
+
+  @override
+  void dispose() {
+    Hive.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: Container(
-          color: Colors.black54,
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: taskController,
-                          decoration: InputDecoration(
-                            labelStyle: const TextStyle(
-                              color: Colors.white,
-                            ),
-                            hintText: 'Adicionar uma tarefa',
-                            hintStyle: const TextStyle(
-                              color: Colors.white,
-                            ),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Colors.red.shade400,
-                                width: 5,
-                              ),
-                            ),
-                          ),
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 20),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          String title = taskController.text;
-                          if (title.isNotEmpty) {
-                            setState(() {
-                              tasks.add(Task(title, DateTime.now()));
-                            });
-                            taskController.clear();
-                          }
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
+                Flexible(
+                  child: ValueListenableBuilder(
+                    valueListenable: taskBox.listenable(),
+                    builder: (context, Box<Task> box, _) {
+                      if (box.values.isEmpty) {
+                        return const Center();
+                      }
+                      return ListView.builder(
+                        itemCount: box.values.length,
+                        itemBuilder: (context, index) {
+                          return TodoListItem(box.getAt(index)!, onDelete);
                         },
-                        style: ElevatedButton.styleFrom(
-                            primary: Colors.red.shade400,
-                            padding: const EdgeInsets.all(16)),
-                        child: const Icon(Icons.add),
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  Flexible(
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: [
-                        for (Task task in tasks) TodoListItem(task, onDelete),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Você possui ${tasks.length} tarefas pendentes',
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 16),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: showDeleteAllTasksConfirmationDialog,
-                        style: ElevatedButton.styleFrom(
-                            primary: Colors.red.shade400,
-                            padding: const EdgeInsets.all(16)),
-                        child: const Text('Limpar tudo'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
+        bottomNavigationBar: BottomAppBar(
+          shape: const CircularNotchedRectangle(),
+          child: SizedBox(
+              height: 50,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20),
+                    child: ValueListenableBuilder(
+                      valueListenable: taskBox.listenable(),
+                      builder: (context, Box<Task> box, _) {
+                        return Text(
+                          taskBox.isEmpty
+                              ? 'Sem tarefas pendentes'
+                              : '${taskBox.length} tarefas pendentes',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        );
+                      },
+                    ),
+                  )
+                ],
+              )),
+        ),
+        floatingActionButton: SizedBox(
+            width: 75,
+            height: 75,
+            child: FloatingActionButton(
+              onPressed: showAddTaskDialog,
+              child: const Icon(Icons.add),
+            )
+            //     ExpandableFab(
+            //   distance: 100,
+            //   initialOpen: false,
+            //   children: [
+            //     FloatingActionButton(
+            //       onPressed: showAddTaskDialog,
+            //       child: const Icon(Icons.delete),
+            //     ),
+            //     ActionButton(
+            //       onPressed: showAddTaskDialog,
+            //       icon: const Icon(Icons.delete),
+            //     ),
+            //   ],
+            // ),
+            ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       ),
     );
+  }
+
+  void showAddTaskDialog() {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: const Text('Informe o título da tarefa'),
+              content: TextField(
+                controller: taskController,
+                decoration: const InputDecoration(
+                  hintText: 'Adicionar uma tarefa',
+                ),
+                style: const TextStyle(fontSize: 15),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  style: TextButton.styleFrom(
+                      primary: Theme.of(context).disabledColor),
+                  child: const Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    addTask();
+                  },
+                  style: TextButton.styleFrom(
+                      primary: Theme.of(context).primaryColorLight),
+                  child: const Text('Confirmar'),
+                ),
+              ],
+            ));
+  }
+
+  void addTask() {
+    String title = taskController.text;
+    if (title.isNotEmpty) {
+      taskBox.add(Task(title, DateTime.now()));
+      taskController.clear();
+    }
   }
 
   void showDeleteAllTasksConfirmationDialog() {
@@ -126,7 +167,8 @@ class _TodoListState extends State<TodoListPage> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            style: TextButton.styleFrom(primary: Colors.black54),
+            style:
+                TextButton.styleFrom(primary: Theme.of(context).disabledColor),
             child: const Text('Cancelar'),
           ),
           TextButton(
@@ -134,7 +176,8 @@ class _TodoListState extends State<TodoListPage> {
               Navigator.of(context).pop();
               deleteAllTasks();
             },
-            style: TextButton.styleFrom(primary: Colors.red.shade400),
+            style:
+                TextButton.styleFrom(primary: Theme.of(context).primaryColor),
             child: const Text('Confirmar'),
           ),
         ],
@@ -143,17 +186,12 @@ class _TodoListState extends State<TodoListPage> {
   }
 
   void deleteAllTasks() {
-    setState(() {
-      tasks.clear();
-    });
+    taskBox.deleteAll(taskBox.keys);
   }
 
   void onDelete(Task task) {
-    setState(() {
-      deletedTask = task;
-      indexDeletedTask = tasks.indexOf(task);
-      tasks.remove(task);
-    });
+    final deletedKey = task.key;
+    task.delete();
 
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -164,14 +202,10 @@ class _TodoListState extends State<TodoListPage> {
             color: Colors.white,
           ),
         ),
-        backgroundColor: Colors.black54,
         action: SnackBarAction(
           label: 'Desfazer',
-          textColor: Colors.red.shade400,
           onPressed: () {
-            setState(() {
-              tasks.insert(indexDeletedTask!, deletedTask!);
-            });
+            taskBox.put(deletedKey, task);
           },
         ),
         duration: const Duration(seconds: 3),
