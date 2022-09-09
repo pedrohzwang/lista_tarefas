@@ -4,7 +4,7 @@ part 'task.g.dart';
 
 @HiveType(typeId: 0)
 class Task extends HiveObject {
-  Task(this.title, this.date, {this.finished});
+  Task(this.title, this.date, {this.finished = false});
 
   @HiveField(0)
   String title;
@@ -12,6 +12,6 @@ class Task extends HiveObject {
   @HiveField(1)
   DateTime date;
 
-  @HiveField(2)
-  bool? finished = false;
+  @HiveField(2, defaultValue: false)
+  bool finished;
 }
